@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link href="styles/style.css" rel="stylesheet" />
+    <title>LOGIN</title>
+  </head>
+  <body>
+    <h1>Login</h1>
+    <form id="LoginForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <br>
+        <label for="userpass">Password:</label>
+        <input type="password" id="userpass" name="userpass" required>
+        <br>
+        <button type="submit">Login</button>
+    </form>
+
+    <script>
+      document.getElementById('LoginForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent form from submitting the traditional way
+
+      const name = document.getElementById('name').value;
+      const userpass = document.getElementById('userpass').value;
+      // const url = stringify('http://127.0.0.1:5005/user?username=${name}');
+
+                 
+              fetch('/login', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json',},
+                  body: JSON.stringify({ name, userpass }),
+                 })
+              .then(response => response.json())
+              .then(data => {
+              if (data.error) {
+               alert('Error : ' + data.error);
+              } else if (data.warn) {
+               alert('Warn : ' + data.warn );
+              } else if (data.success){
+               alert('Success : ' + data.success)
+               window.location.href = '{{ url_for('dashboard') }}'
+               return name
+              }
+
+              }).catch((error) => {
+                  alert('Error: ' + error);
+              })
+      })
+    </script>  
+  </body>
+</html>
