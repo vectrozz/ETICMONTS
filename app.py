@@ -30,7 +30,7 @@ bcrypt = Bcrypt(app)
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 #app.config['SECRET_KEY'] = 'thisisasecretkey'
 
-app = Flask(__name__)
+
 app.secret_key = 'thisisasecretkey'  # Use a strong secret key in production
 
 #login_manager = LoginManager()
@@ -70,17 +70,6 @@ def home():
     return render_template('index.html')
 
 
-@app.route('/login-example', methods=['GET', 'POST'])
-def loginexample():
-    #form = LoginForm()
-    #'if form.validate_on_submit():
-    #    user = User.query.filter_by(username=form.username.data).first()
-    #    if user:
-    #        if bcrypt.check_password_hash(user.password, form.password.data):
-    #            login_user(user)
-    #           return redirect(url_for('dashboard'))
-    return render_template('login.html')
-
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
@@ -108,19 +97,23 @@ def login():
                     user_id = id_by_name()
                     #login_user(user_id, remember=False, duration=None, force=False, fresh=True)current_user.is_authenticated:
                     #flask_login.current_user.name
-                    session['user_id'] = result[0] 
+                    session['user_id'] = result[0]
+                    session['username'] = name 
                     return jsonify({"success": f"player {name} login successfull" }) #redirect(url_for('dashboard')) #jsonify({"success": f"player {name} login successfull" })
                 else:
                     return jsonify({"warn": "wrong password"})
 
 
 
-@app.route('/dashboard', methods=['GET'])
+@app.route('/dashboard', methods=['GET','POST' ])
 #@login_required
 def dashboard():
-    if 'user_id' not in session:
+    if 'username' in session:
+        username = session['username']
+        id = session['user_id']  # Récupère le nom de l'utilisateur de la session
+        return render_template('dashboard.html', username=username, user_id=id)
+    else:
         return redirect(url_for('login'))
-    return render_template('dashboard.html')
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -132,9 +125,10 @@ def logout():
 
 @ app.route('/register', methods=['GET','POST'])
 def register():
+
     if request.method == 'GET':
         # Serve the registration form page
-        return render_template('register.html')  # Ensure register.html exists
+        return render_template('register.html')  
     
     if request.method == 'POST':
         #data = request.get_json()
@@ -157,7 +151,8 @@ def register():
                     player_id = curr.fetchone()[0]
                     conn.commit()
                     session['user_id'] = player_id
-                    return jsonify({"success": f"Player {name} created", "id": player_id}), 201
+                    session['username'] = name 
+                    return jsonify({"success": f"Player {name} created", "id": player_id}), redirect(url_for('login')), 201
         
                 except Exception as e:
                     conn.rollback()  # Rollback in case of error

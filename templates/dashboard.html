@@ -9,8 +9,23 @@
 </head>
 
 <body>
-    <h1>Hello you are logged in.</h1>
+    <h1>Hello you are logged in {{ username }}.</h1>
     <a href="{{url_for('logout')}}">Press here to logout</a>
+
+
+
+    <table>
+        <tr>
+            <td>ID</td>
+            <td>Name</td>
+            <td>Register time</td>
+        </tr>
+        <tr>
+            <td>{{user_id}}</td>
+            <td>{{username}}</td>
+            <td>{{userpass}}</td>
+        </tr>
+    </table>
 </body>
 
 </html>
