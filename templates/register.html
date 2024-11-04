@@ -45,7 +45,7 @@
                      alert('Info : ' + data.info );
                     } else if (data.success){
                      alert('Success : ' + data.success)
-                    // window.location.href = '/login-route'
+                    window.location.href = '{{ url_for('login') }}'
                     }
 
                     }).catch((error) => {

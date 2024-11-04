@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 #from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from flask import session, abort
+from flask import flash
 
 
 #from flask_wtf import FlaskForm
@@ -152,7 +153,12 @@ def register():
                     conn.commit()
                     session['user_id'] = player_id
                     session['username'] = name 
-                    return jsonify({"success": f"Player {name} created", "id": player_id}), redirect(url_for('login')), 201
+                    
+                    #flash(f"Player {name} with id  was created","Success")
+                    
+                    # Redirige directement vers la page de connexion
+                    #return redirect(url_for('login'))
+                    return jsonify({"success": f"Player {name} created", "id": player_id}), 200
         
                 except Exception as e:
                     conn.rollback()  # Rollback in case of error
