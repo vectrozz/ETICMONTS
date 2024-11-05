@@ -13,12 +13,13 @@ from flask import flash
 #from wtforms.validators import InputRequired, Length, ValidationError
 
 
-CREATE_PLAYERS_TABLE = ('''CREATE TABLE IF NOT EXISTS players2 (id SERIAL PRIMARY KEY, name VARCHAR (20), userpass VARCHAR (100))''')
-DELETE_PLAYERS_TABLE = ('''DROP TABLE IF EXISTS players2''')
-INSERT_PLAYER = ('''INSERT INTO players2 (name, userpass) VALUES (%s, %s) RETURNING id;''')
-PLAYERS_LIST = ('''SELECT * FROM players2''')
-SEARCH_PLAYER = ('''SELECT id FROM players2 WHERE name LIKE (%s)''')
-
+CREATE_PLAYERS_TABLE = ('''CREATE TABLE IF NOT EXISTS players4 (id SERIAL PRIMARY KEY, name VARCHAR (20), userpass VARCHAR (100),  created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, last_login_date TIMESTAMP)''')
+DELETE_PLAYERS_TABLE = ('''DROP TABLE IF EXISTS players4''')
+INSERT_PLAYER = ('''INSERT INTO players4 (name, userpass) VALUES (%s, %s) RETURNING id, created_date;''')
+PLAYERS_LIST = ('''SELECT * FROM players4''')
+SEARCH_PLAYER = ('''SELECT id FROM players4 WHERE name LIKE (%s)''')
+UPDATE_LOGIN_DATE =('''UPDATE players4 SET last_login_date = %s WHERE id = %s''')
+SEARCH_LAST_LOGIN = ('''SELECT last_login_date FROM players4 WHERE name LIKE (%s)''')
 
 
 app = Flask(__name__)
@@ -87,6 +88,8 @@ def login():
         curr = conn.cursor()
         curr.execute(SEARCH_PLAYER, (name,))
         result = curr.fetchone()
+        curr.execute(SEARCH_LAST_LOGIN, (name,))
+        result_last_login = curr.fetchone()
         curr.close()
         conn.close()
         #End of "those only for balbalbalbal "
@@ -99,10 +102,24 @@ def login():
                     #login_user(user_id, remember=False, duration=None, force=False, fresh=True)current_user.is_authenticated:
                     #flask_login.current_user.name
                     session['user_id'] = result[0]
-                    session['username'] = name 
+                    session['username'] = name
+                    session['last_login_date'] = result_last_login[0]
+                    if result_last_login[0] == None:
+                        session['last_login_date'] = "First login !"
+                    
+                    
+                    # Mettre à jour le champ `last_login`
+                    conn = db_conn()
+                    curr = conn.cursor()
+                    curr.execute(UPDATE_LOGIN_DATE, (datetime.now(), user_id))
+                    conn.commit()
+                    curr.close()
+                    conn.close()
+                    session['username'] = name
                     return jsonify({"success": f"player {name} login successfull" }) #redirect(url_for('dashboard')) #jsonify({"success": f"player {name} login successfull" })
                 else:
                     return jsonify({"warn": "wrong password"})
+        return jsonify({"error": f"player {name} does not exist"})
 
 
 
@@ -112,7 +129,9 @@ def dashboard():
     if 'username' in session:
         username = session['username']
         id = session['user_id']  # Récupère le nom de l'utilisateur de la session
-        return render_template('dashboard.html', username=username, user_id=id)
+        created_date = session['created_date']
+        last_login_date = session['last_login_date']
+        return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
     else:
         return redirect(url_for('login'))
 
@@ -149,16 +168,17 @@ def register():
                 try:
                     #curr.execute(CREATE_PLAYERS_TABLE)
                     curr.execute(INSERT_PLAYER,(name,userpass))
-                    player_id = curr.fetchone()[0]
+                    player_id, created_date = curr.fetchone()
                     conn.commit()
                     session['user_id'] = player_id
-                    session['username'] = name 
+                    session['username'] = name
+                    session['created_date'] = created_date 
                     
                     #flash(f"Player {name} with id  was created","Success")
                     
                     # Redirige directement vers la page de connexion
                     #return redirect(url_for('login'))
-                    return jsonify({"success": f"Player {name} created", "id": player_id}), 200
+                    return jsonify({"success": f"Player {name} created at {created_date}", "id": player_id}), 200
         
                 except Exception as e:
                     conn.rollback()  # Rollback in case of error
