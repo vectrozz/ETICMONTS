@@ -9,9 +9,29 @@
 </head>
 
 <body>
-    <h1>Login Authentication System in Flask.</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <h1>Welcome !</h1>
+    
+        <!-- #### Formulaire pour passer le nom de la table ####
+
+        <form action="{{ url_for('initdb') }}" method="POST">
+          <label for="table_name">Nom de la table:</label>
+          <input type="text" id="table_name" name="table_name" placeholder="enter table name" required>
+          <button type="submit">Initialiser DB</button>
+
+          -->
+      </form>
     <a href="{{ url_for('login') }}">Login Page</a><br>
     <a href="{{ url_for('register') }}">Register Page</a><br>
+    <a href="{{ url_for('initdb') }}">Initialise db</a><br>
+
 
 </body>
 

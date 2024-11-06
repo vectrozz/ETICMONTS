@@ -1,39 +1,57 @@
-from flask import Flask, render_template, url_for, redirect, request, jsonify
+from flask import Flask, render_template, url_for, redirect, request, jsonify, session, flash, abort
 import psycopg2
 from datetime import datetime, timezone
 #from dotenv import load_dotenv    #dotenv read file .env and set variable as environment variable
 #from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
-from flask import session, abort
-from flask import flash
 
 
 #from flask_wtf import FlaskForm
 #from wtforms import StringField, PasswordField, SubmitField
 #from wtforms.validators import InputRequired, Length, ValidationError
 
-
-CREATE_PLAYERS_TABLE = ('''CREATE TABLE IF NOT EXISTS players4 (id SERIAL PRIMARY KEY, name VARCHAR (20), userpass VARCHAR (100),  created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, last_login_date TIMESTAMP)''')
-DELETE_PLAYERS_TABLE = ('''DROP TABLE IF EXISTS players4''')
-INSERT_PLAYER = ('''INSERT INTO players4 (name, userpass) VALUES (%s, %s) RETURNING id, created_date;''')
-PLAYERS_LIST = ('''SELECT * FROM players4''')
-SEARCH_PLAYER = ('''SELECT id FROM players4 WHERE name LIKE (%s)''')
-UPDATE_LOGIN_DATE =('''UPDATE players4 SET last_login_date = %s WHERE id = %s''')
-SEARCH_LAST_LOGIN = ('''SELECT last_login_date FROM players4 WHERE name LIKE (%s)''')
-
+TABLE_NAME = "playersXhashed" 
+CREATE_PLAYERS_TABLE = (f'''CREATE TABLE IF NOT EXISTS {TABLE_NAME} (id SERIAL PRIMARY KEY, name VARCHAR (20), userpass VARCHAR (100),  created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, last_login_date TIMESTAMP)''')
+DELETE_PLAYERS_TABLE = (f'''DROP TABLE IF EXISTS {TABLE_NAME}''')
+INSERT_PLAYER = (f'''INSERT INTO {TABLE_NAME} (name, userpass) VALUES (%s, %s) RETURNING id, created_date;''')
+PLAYERS_LIST = (f'''SELECT * FROM {TABLE_NAME}''')
+SEARCH_PLAYER = (f'''SELECT id FROM {TABLE_NAME} WHERE name LIKE (%s)''')
+UPDATE_LOGIN_DATE =(f'''UPDATE {TABLE_NAME} SET last_login_date = %s WHERE id = %s''')
+SEARCH_LAST_LOGIN = (f'''SELECT last_login_date FROM {TABLE_NAME} WHERE name LIKE (%s)''')
+SEARCH_CREATED_DATE = (f'''SELECT created_date FROM {TABLE_NAME} WHERE name LIKE (%s)''')
 
 app = Flask(__name__)
 
 def db_conn():
     return psycopg2.connect(database="bobdb", host="127.0.0.1", user="bob", password="bobpass", port="5432")
-db = db_conn()
 
 bcrypt = Bcrypt(app)
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-#app.config['SECRET_KEY'] = 'thisisasecretkey'
-
-
 app.secret_key = 'thisisasecretkey'  # Use a strong secret key in production
+
+
+
+@app.route('/initdb', methods=['GET','POST'])
+def initdb():
+    #global TABLE_NAME
+    #table_name = request.form.get('table_name')
+    #if table_name:
+    #    TABLE_NAME = table_name
+    conn=db_conn()
+    curr = conn.cursor()
+    curr.execute(CREATE_PLAYERS_TABLE)
+    conn.commit()
+    if get_player_list():
+        playerlist = get_player_list()
+        totalplayers = len(playerlist)
+        flash(f"Db already initialisated and contain {totalplayers} players","warning")
+    else:
+        curr.execute(f'''INSERT INTO {TABLE_NAME} (name) VALUES (%s)''', ["myname"])
+        flash("Db initialisation succeed","success")
+    conn.commit()
+    curr.close()
+    conn.close()
+
+    return render_template('initdb.html')
 
 #login_manager = LoginManager()
 #login_manager.init_app(app)
@@ -88,8 +106,6 @@ def login():
         curr = conn.cursor()
         curr.execute(SEARCH_PLAYER, (name,))
         result = curr.fetchone()
-        curr.execute(SEARCH_LAST_LOGIN, (name,))
-        result_last_login = curr.fetchone()
         curr.close()
         conn.close()
         #End of "those only for balbalbalbal "
@@ -97,12 +113,23 @@ def login():
 
         for row in player_list:
             if row[1] == name:
-                if row[2] == userpass:
+                conn = db_conn()
+                curr = conn.cursor()
+                curr.execute(SEARCH_LAST_LOGIN, (name,))
+                result_last_login = curr.fetchone()
+                curr.execute(SEARCH_CREATED_DATE, (name,))
+                result_created_date =curr.fetchone()
+                curr.close()
+                conn.close()
+               
+                if bcrypt.check_password_hash(row[2], userpass):
+                #if row[2] == userpass:
                     user_id = id_by_name()
                     #login_user(user_id, remember=False, duration=None, force=False, fresh=True)current_user.is_authenticated:
                     #flask_login.current_user.name
                     session['user_id'] = result[0]
                     session['username'] = name
+                    session['created_date'] = result_created_date[0]
                     session['last_login_date'] = result_last_login[0]
                     if result_last_login[0] == None:
                         session['last_login_date'] = "First login !"
@@ -116,7 +143,7 @@ def login():
                     curr.close()
                     conn.close()
                     session['username'] = name
-                    return jsonify({"success": f"player {name} login successfull" }) #redirect(url_for('dashboard')) #jsonify({"success": f"player {name} login successfull" })
+                    return jsonify({"success": f"player {name} login successfull" }) #redirect(url_for('dashboard'))
                 else:
                     return jsonify({"warn": "wrong password"})
         return jsonify({"error": f"player {name} does not exist"})
@@ -140,7 +167,10 @@ def dashboard():
 #@login_required
 def logout():
     session.pop('user_id', None)  # Remove the user_id from session
-    return redirect(url_for('login'))
+    session.pop('username', None) 
+    session.pop('created_date', None)
+    session.pop('last_login_date', None)
+    return redirect(url_for('home'))
 
 
 @ app.route('/register', methods=['GET','POST'])
@@ -167,7 +197,8 @@ def register():
             if ((userpass == userpass1) & (userpass != "")):
                 try:
                     #curr.execute(CREATE_PLAYERS_TABLE)
-                    curr.execute(INSERT_PLAYER,(name,userpass))
+                    userpass_encrypted = bcrypt.generate_password_hash(userpass).decode('utf-8')
+                    curr.execute(INSERT_PLAYER,(name,userpass_encrypted))
                     player_id, created_date = curr.fetchone()
                     conn.commit()
                     session['user_id'] = player_id
@@ -244,4 +275,5 @@ def checkifexist():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    #app.run(debug=True)
+    app.run(host='0.0.0.0',port=5010,debug=True)
