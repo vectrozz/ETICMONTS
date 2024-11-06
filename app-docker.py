@@ -23,7 +23,7 @@ SEARCH_CREATED_DATE = (f'''SELECT created_date FROM {TABLE_NAME} WHERE name LIKE
 app = Flask(__name__)
 
 def db_conn():
-    return psycopg2.connect(database="bobdb", host="0.0.0.0", user="bob", password="bobpass", port="5432")
+    return psycopg2.connect(database="bobdb", host="postgres-db", user="bob", password="bobpass", port="5432")
 
 bcrypt = Bcrypt(app)
 app.secret_key = 'thisisasecretkey'  # Use a strong secret key in production
