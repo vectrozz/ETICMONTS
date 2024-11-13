@@ -20,8 +20,8 @@ SEARCH_CREATED_DATE = (f'''SELECT created_date FROM {TABLE_NAME} WHERE name LIKE
 CREATE_SURFACE_TABLE = (f'''CREATE TABLE IF NOT EXISTS surface (
     id SERIAL PRIMARY KEY,
     linked_id INT REFERENCES {TABLE_NAME}(id) ON DELETE CASCADE,
-    surface_type VARCHAR(50),
-    area DECIMAL(10, 4),
+    year INTEGER CHECK (year >= 2010 AND year <= 2100),
+    surface DECIMAL(10, 4),
     forest DECIMAL(10, 4),
     hedge DECIMAL(10, 4),
     bramble DECIMAL(10, 4),
@@ -85,7 +85,7 @@ CREATE_LUTTE_TABLE = (f'''CREATE TABLE IF NOT EXISTS lutte (
 );''')
 
 
-INSERT_INTO_SURFACE = (f'''INSERT INTO surface (linked_id, area, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;''')
+INSERT_INTO_SURFACE = (f'''INSERT INTO surface (linked_id, year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;''')
 
 app = Flask(__name__)
 
@@ -95,7 +95,7 @@ def db_conn():
     
     
 bcrypt = Bcrypt(app)
-app.secret_key = 'thisisasecretkey'  # Use a strong secret key in production
+app.secret_key = 'sohgHZ64gzgooazgskj'  # Use a strong secret key in production
 
 @app.route('/')
 def home():
@@ -107,21 +107,20 @@ def initdb():
     conn=db_conn()
     curr = conn.cursor()
     curr.execute(CREATE_PLAYERS_TABLE)
-    if get_player_list():
+    curr.execute(CREATE_SURFACE_TABLE)
+    #curr.execute(CREATE_SOIL_TABLE)
+    #curr.execute(CREATE_WATER_TABLE)
+    #curr.execute(CREATE_INTRANT_TABLE)
+    #curr.execute(CREATE_LUTTE_TABLE)
+    conn.commit()
+
+    if get_player_list() != "no player in database":
         playerlist = get_player_list()
         totalplayers = len(playerlist)
         flash(f"Db already initialisated and contain {totalplayers} players","warning")
     else:
         curr.execute(f'''INSERT INTO {TABLE_NAME} (name) VALUES (%s)''', ["myname"])
         flash("Db initialisation succeed","success")
-    conn.commit()
-
-    curr.execute(CREATE_SURFACE_TABLE)
-    curr.execute(CREATE_SOIL_TABLE)
-    curr.execute(CREATE_WATER_TABLE)
-    curr.execute(CREATE_INTRANT_TABLE)
-    curr.execute(CREATE_LUTTE_TABLE)
-    conn.commit()
 
 
     curr.close()
@@ -220,7 +219,7 @@ def register():
             curr.execute(insert_user, (name, hashed_password))
             player_id, created_date = curr.fetchone()
             
-            curr.execute(f"INSERT INTO surface (linked_id, surface_type, area, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id, linked_id;", [player_id,"non defini","0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "non defini"])
+            #curr.execute(f"INSERT INTO surface (linked_id, year, area, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id, linked_id;", [player_id,"non defini","0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "non defini"])
             #curr.execute(insert_surface)
             conn.commit()
 
@@ -260,7 +259,7 @@ def dashboard():
             result = curr.fetchone()
 
             if result is None:
-                area = "non défini"
+                surface = "non défini"
                 forest = "non défini"
                 hedge = "non défini"
                 bramble = "non défini"
@@ -270,13 +269,12 @@ def dashboard():
                 walls = "non défini"
                 mown_area = "non défini"
                 not_worked_area = "non défini"
-                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, surface=area)  
-
+                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)  
             #if  request.form2[]:           
-            
+            ###### ICI DANS LE ELSE EN DESSOUS RENVOYER LES LIGNES DE BDD CORREPONDANTES
             else:
-                id_surface, linked_id, surface_type, area, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description = result
-                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, surface=area)
+                # ICI SELECT CORRECT LINES id_surface, linked_id, surface_type, area, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description = result
+                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
        
        
         else:
@@ -284,6 +282,59 @@ def dashboard():
         
     if request.method == 'POST':
         return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
+
+@app.route('/addsurf', methods=['GET','POST' ])
+def addsurf():
+    if request.method == 'GET':
+        
+        if 'username' in session:
+            username = session['username']
+            id = session['user_id']  # Récupère le nom de l'utilisateur de la session
+            created_date = session['created_date']
+            last_login_date = session['last_login_date']
+            #SEARCH_CREATED_DATE = (f'''SELECT created_date FROM {TABLE_NAME} WHERE name LIKE (%s)''')
+            return redirect(url_for('addsurf'))
+
+    if (request.method == 'POST') & ('username' in session):
+        id = session['user_id']
+        year = int(request.form['year'])
+        surface = float(request.form['surface'])
+        foret = float(request.form['foret'])
+        haie = float(request.form['haie'])
+        roncier = float(request.form['roncier'])
+        mare = float(request.form['mare'])
+        coursdeau = float(request.form['surface'])
+        tasdebois = float(request.form['surface'])
+        murets = float(request.form['surface'])
+        surfnontondue = float(request.form['surfnontondue'])
+        surfnontravaillee = float(request.form['surfnontravaillee'])
+        commentaire = request.form['commentaire']
+
+        conn = db_conn()
+        curr = conn.cursor()
+        curr.execute(INSERT_INTO_SURFACE, (id, year, surface, foret, haie, roncier, mare, coursdeau, tasdebois, murets, surfnontondue, surfnontravaillee, commentaire))
+        conn.commit()
+        conn.close()
+
+        flash(f"Surface pour année {year} ajouté","success")
+
+        return render_template('addsurf.html')
+        #result = curr.fetchone()
+
+
+        #if  request.form2[]:           
+        
+    else:
+        flash(f"Mauvaise methode ou loggez vous","error")
+        #year,linked_id, year, surface_type, area, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description = result
+        return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, year=year, surface=surface,foret=foret, haies=haie, roncier=roncier, mare=mare, coursdeau=coursdeau, tasdebois=tasdebois, murets=murets, surfnontondue=surfnontondue, surfnontravaillee=surfnontravaillee )
+       
+       
+        #else:
+        #    return redirect(url_for('login'))
+        
+    
+        #return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -305,7 +356,7 @@ def get_player_list():
     if playerlist:
         return playerlist
     else:
-        None
+        return "no player in database"
 
 @ app.get("/totalplayer")
 def get_total_player():
