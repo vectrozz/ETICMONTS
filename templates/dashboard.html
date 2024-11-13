@@ -6,10 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
 </head>
 
 <body>
-    <h1>Hello you are logged in {{ username }}.</h1>
+    <h1>Tableau de bord de {{ username }}.</h1>
     <a href="{{url_for('logout')}}">Logout</a>
 
 
@@ -28,6 +36,108 @@
             <td>{{last_login_date}}</td>
         </tr>
     </table>
+
+    <h2>Surface</h1>
+        <table id="surface">
+            <tr>
+                <td>surface totale</td>
+                <td>forêt</td>
+                <td>Haies</td>
+                <td>Roncier</td>
+                <td>Mares</td>
+                <td>Cours d'eau</td>
+                <td>Tas de bois</td>
+                <td>Murets</td>
+                <td>Surface non tondue</td>
+                <td>Surface non travaillée</td>
+            </tr>
+            <tr>
+                <form2 action="{{ url_for('dashboard') }}" method="POST">
+                    <td><input type="text" id="id" name="name" ></td>
+                    <td><input type="text" id="name" name="userpass" ></td>
+                    <td><input type="text" id="created" name="userpass1" ></td>
+                    <td><input type="text" id="last" name="name" ></td>
+                    <td><button type="submit">ajouter surface</button></td>
+                </form2>
+
+            </tr>
+        </table>
+
+
+    <h2>Sol</h1>
+    <table id="sol">
+        <tr>
+            <td>sol</td>
+            <td>Name</td>
+            <td>Member since</td>
+            <td>Last login</td>
+        </tr>
+        <tr>
+            <td>{{user_id}}</td>
+            <td>{{username}}</td>
+            <td>{{created_date}}</td>
+            <td>{{last_login_date}}</td>
+        </tr>
+    </table>
+
+    <h2>Eau</h1>
+        <table id="sol">
+            <tr>
+                <td>sol</td>
+                <td>Name</td>
+                <td>Member since</td>
+                <td>Last login</td>
+            </tr>
+            <tr>
+                <td>{{user_id}}</td>
+                <td>{{username}}</td>
+                <td>{{created_date}}</td>
+                <td>{{last_login_date}}</td>
+            </tr>
+        </table>
+
+        <h2>Intrants</h1>
+            <table id="sol">
+                <tr>
+                    <td>sol</td>
+                    <td>Name</td>
+                    <td>Member since</td>
+                    <td>Last login</td>
+                </tr>
+                <tr>
+                    <td>{{user_id}}</td>
+                    <td>{{username}}</td>
+                    <td>{{created_date}}</td>
+                    <td>{{last_login_date}}</td>
+                </tr>
+            </table>
+
+            <h2>Luttes</h1>
+                <table id="sol">
+                    <tr>
+                        <td><b>sol</b></td>
+                        <td>Name</td>
+                        <td>Member since</td>
+                        <td>Last login</td>
+                    </tr>
+                    <tr>
+                        <td>{{user_id}}</td>
+                        <td>{{username}}</td>
+                        <td>{{created_date}}</td>
+                        <td>{{last_login_date}}</td>
+                    </tr>
+                    <tr>
+                        <form action="{{ url_for('dashboard') }}" method="POST">
+                        <td><input type="text" id="id" name="name" required></td>
+                        <td><input type="text" id="name" name="userpass" required></td>
+                        <td><input type="text" id="created" name="userpass1" required></td>
+                        <td><input type="text" id="last" name="name" ></td>
+                        <td><button type="submit">Create Player</button></td>
+                        </form>
+
+                    </tr>
+                </table>
+
 </body>
 
 </html>

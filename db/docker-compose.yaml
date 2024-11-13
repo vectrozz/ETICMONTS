@@ -4,15 +4,15 @@ services:
   postgres-db:
     image: postgres:17
     environment:
-      POSTGRES_USER: "bob"
-      POSTGRES_PASSWORD: "bobpass"
-      POSTGRES_DB: "bobdb"
+      POSTGRES_USER: "eticmont"
+      POSTGRES_PASSWORD: "eticmont"
+      POSTGRES_DB: "eticmont"
 
     volumes:
-      - "postgres-data:/var/lib/postgresql/data"
+      - "postgres-data:/var/lib/postgresql/data-eticmont"
 
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
 volumes:
   postgres-data:

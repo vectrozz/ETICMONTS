@@ -8,7 +8,7 @@ services:
     networks:
       - front-db
     ports:
-      - "5010:5010"
+      - "5003:5010"
     depends_on:
       - postgres-db
     entrypoint:
@@ -19,15 +19,15 @@ services:
   postgres-db:
     image: postgres:17
     environment:
-      POSTGRES_USER: "bob"
-      POSTGRES_PASSWORD: "bobpass"
-      POSTGRES_DB: "bobdb"
+      POSTGRES_USER: "eticmont"
+      POSTGRES_PASSWORD: "eticmont"
+      POSTGRES_DB: "eticmont"
     volumes:
       - "postgres-data:/var/lib/postgresql/data"
     networks:
       - front-db
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
 volumes:
   postgres-data:
