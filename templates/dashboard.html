@@ -62,6 +62,38 @@
                 <td>Surface non travaillée</td>
                 <td>commentaire</td>
             </tr>
+            <tbody>
+                {% for row in surfaces %}
+                <tr>
+                    <td>{{ row[0] }}</td> <!-- id -->
+                    <td>{{ row[1] }}</td> <!-- year -->
+                    <td>{{ row[2] }}</td> <!-- surface -->
+                    <td>{{ row[3] }}</td> <!-- forest -->
+                    <td>{{ row[4] }}</td> <!-- hedge -->
+                    <td>{{ row[5] }}</td> <!-- bramble -->
+                    <td>{{ row[6] }}</td> <!-- pond -->
+                    <td>{{ row[7] }}</td> <!-- pond -->
+                    <td>{{ row[8] }}</td> <!-- pond -->
+                    <td>{{ row[9] }}</td> <!-- pond -->
+                    <td>{{ row[10] }}</td> <!-- pond -->
+                    <td>{{ row[11] }}</td> <!-- pond -->
+                </tr>
+                {% endfor %}
+            </tbody>
+            <!--<tr>
+                <td>{{annee}}</td>
+                <td>{{surface}}</td>
+                <td>{{forêt}}</td>
+                <td>{{haie}}</td>
+                <td>{{roncier}}</td>
+                <td>{{mare}}</td>
+                <td>{{courdeau}}</td>
+                <td>{{tasdebois}}</td>
+                <td>{{muret}}</td>
+                <td>{{surfnontondue}}</td>
+                <td>{{Surfnontravaillee}}</td>
+                <td>commentaire</td>
+            </tr>-->
             <tr>
                 <form action="{{ url_for('addsurf') }}" method="POST">
                     <td><input type="number" id="year" name="year" min="2010" max="2100" step="1" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" ></td>

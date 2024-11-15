@@ -27,7 +27,7 @@
 <body>
     <h1>Ajout de surface pour {{ username }}.</h1>
     <a href="{{url_for('logout')}}">Logout</a>
-    <a href="{{url_for('dashboard')}}">dashboard</a>
+    <a href="{{url_for('dashboard')}}"><b>dashboard</b></a>
 
 
     <table>
@@ -61,6 +61,24 @@
                 <td>Surface non travaillée</td>
                 <td>commentaire</td>
             </tr>
+            <tbody>
+                {% for row in surfaces %}
+                <tr>
+                    <td>{{ row[0] }}</td> <!-- id -->
+                    <td>{{ row[1] }}</td> <!-- year -->
+                    <td>{{ row[2] }}</td> <!-- surface -->
+                    <td>{{ row[3] }}</td> <!-- forest -->
+                    <td>{{ row[4] }}</td> <!-- hedge -->
+                    <td>{{ row[5] }}</td> <!-- bramble -->
+                    <td>{{ row[6] }}</td> <!-- pond -->
+                    <td>{{ row[7] }}</td> <!-- pond -->
+                    <td>{{ row[8] }}</td> <!-- pond -->
+                    <td>{{ row[9] }}</td> <!-- pond -->
+                    <td>{{ row[10] }}</td> <!-- pond -->
+                    <td>{{ row[11] }}</td> <!-- pond -->
+                </tr>
+                {% endfor %}
+            </tbody>
             <tr>
                 <form action="{{ url_for('addsurf') }}" method="POST">
                     <td><input type="number" id="year" name="year" min="2010" max="2100" step="1" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" ></td>

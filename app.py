@@ -255,10 +255,15 @@ def dashboard():
             
             conn = db_conn()
             curr = conn.cursor()
-            curr.execute(f'''SELECT * FROM surface WHERE linked_id = (%s)''', (id,))
-            result = curr.fetchone()
+            curr.execute(f'''SELECT year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description FROM surface WHERE linked_id = (%s)''', (id,))
+            surfaces = curr.fetchall()
 
-            if result is None:
+            curr.close()
+            conn.close()
+
+
+            if surfaces is None:
+                annee = "non defini"
                 surface = "non défini"
                 forest = "non défini"
                 hedge = "non défini"
@@ -269,12 +274,13 @@ def dashboard():
                 walls = "non défini"
                 mown_area = "non défini"
                 not_worked_area = "non défini"
-                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)  
+                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, surfaces=surfaces),  
             #if  request.form2[]:           
             ###### ICI DANS LE ELSE EN DESSOUS RENVOYER LES LIGNES DE BDD CORREPONDANTES
             else:
+                #linked_id, year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description = result
                 # ICI SELECT CORRECT LINES id_surface, linked_id, surface_type, area, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description = result
-                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
+                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, surfaces=surfaces)
        
        
         else:
@@ -314,11 +320,14 @@ def addsurf():
         curr = conn.cursor()
         curr.execute(INSERT_INTO_SURFACE, (id, year, surface, foret, haie, roncier, mare, coursdeau, tasdebois, murets, surfnontondue, surfnontravaillee, commentaire))
         conn.commit()
+        curr.execute(f'''SELECT year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description FROM surface WHERE linked_id = (%s)''', (id,))
+        surfaces = curr.fetchall()
+        curr.close()
         conn.close()
 
         flash(f"Surface pour année {year} ajouté","success")
 
-        return render_template('addsurf.html')
+        return render_template('addsurf.html', surfaces=surfaces)
         #result = curr.fetchone()
 
 
