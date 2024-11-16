@@ -4,7 +4,7 @@ services:
   app-flask:
     build:  
       context: ./
-      dockerfile: site-web.Dockerfile
+      dockerfile: eticmont.Dockerfile
     networks:
       - front-db
     ports:
@@ -23,7 +23,7 @@ services:
       POSTGRES_PASSWORD: "eticmont"
       POSTGRES_DB: "eticmont"
     volumes:
-      - "postgres-data:/var/lib/postgresql/data"
+      - "/home/postgres-data:/var/lib/postgresql/data"
     networks:
       - front-db
     ports:

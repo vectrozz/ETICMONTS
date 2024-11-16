@@ -18,7 +18,7 @@
     {% endif %}
     {% endwith %}
 
-    <h1>Welcome !</h1>
+    <h1>Bienvenu sur la base de données MAEC !</h1>
     
         <!-- #### Formulaire pour passer le nom de la table ####
 
@@ -29,9 +29,9 @@
 
           -->
       </form>
-    <a href="{{ url_for('login') }}">Login Page</a><br>
-    <a href="{{ url_for('register') }}">Register Page</a><br>
-    <a href="{{ url_for('initdb') }}">Initialise db</a><br>
+    <a href="{{ url_for('login') }}" class="button">Login Page</a><br>
+    <a href="{{ url_for('register') }}" class="button">Register Page</a><br>
+    <a href="{{ url_for('initdb') }}" class="button secondary">Initialise db</a><br>
 
 
 </body>

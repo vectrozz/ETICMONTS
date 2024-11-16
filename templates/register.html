@@ -15,13 +15,9 @@
     {% endif %}
     {% endwith %}
 
-    <!-- Style CSS à renvoyer dans fichier CSS-->
-    <style>
-        .alert-success { color: green; padding: 10px; border: 1px solid green; margin-bottom: 10px; }
-        .alert-warning { color: orange; padding: 10px; border: 1px solid orange; margin-bottom: 10px; }
-        .alert-danger { color: red; padding: 10px; border: 1px solid red; margin-bottom: 10px; }
-    </style>
-    <!-- FIN du Style CSS à renvoyer dans fichier CSS-->
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
 
 
 </head>

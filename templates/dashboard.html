@@ -16,9 +16,7 @@
     {% endwith %}
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <!-- Style CSS à renvoyer dans fichier CSS-->
-
-    <!-- FIN du Style CSS à renvoyer dans fichier CSS-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -109,6 +107,70 @@
 
             </tr>
         </table>
+
+
+        <h2>Graphique des surfaces par année</h2>
+        <canvas id="surfaceChart" width="400" height="200"></canvas>
+        
+        <script>
+            // Récupération des données depuis le tableau HTML
+            const rows = document.querySelectorAll("#surface tbody tr");
+            const years = [];
+            const surfaces = [];
+            const forets = [];
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll("td");
+                years.push(cells[0].textContent);  // 1ere colonne = année
+                surfaces.push(parseFloat(cells[1].textContent));  // 2eme colonne = surfac
+                forets.push(parseFloat(cells[2].textContent));  // 2eme colonne = surfac
+            });
+        
+            // Créer le graphique avec Chart.js
+            const ctx = document.getElementById('surfaceChart').getContext('2d');
+            const surfaceChart = new Chart(ctx, {
+                type: 'line',  // Type de graphique (ici un graphique en ligne)
+                data: {
+                    labels: years,  // Les années extraites
+                    datasets: [
+                        {
+                        label: 'Surface Totale',
+                        data: surfaces,  // Les surfaces extraites
+                        borderColor: 'rgba(0, 116, 78, 1)',  // Couleur de la ligne
+                        backgroundColor: 'rgba(0, 116, 78, 0.2)',  // Couleur de fond de la ligne
+                        borderWidth: 2,
+                        fill: true  // Remplissage sous la courbe
+                        },
+                        {
+                        label: 'Forêts',
+                        data: forets,  // Les surfaces extraites
+                        borderColor: 'rgba(0, 0, 78, 1)',  // Couleur de la ligne
+                        backgroundColor: 'rgba(0, 100, 78, 0.2)',  // Couleur de fond de la ligne
+                        borderWidth: 2,
+                        fill: true  // Remplissage sous la courbe
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Année'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Surface (ha)'
+                            },
+                            beginAtZero: true  // Démarrer l'axe des ordonnées à zéro
+                        }
+                    }
+                }
+            });
+        </script>
 
 
     <h2>Sol</h1>
