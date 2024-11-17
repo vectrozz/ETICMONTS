@@ -100,88 +100,6 @@
         </table>
 
 
-        <h2>Graphique des surfaces par année</h2>
-        <canvas id="surfaceChart" width="400" height="200"></canvas>
-        
-        <script>
-            // Récupération des données depuis le tableau HTML
-            const rows = document.querySelectorAll("#surface tbody tr");
-            const years = [];
-            const surfaces = [];
-            const forets = [];
-
-            rows.forEach(row => {
-                const cells = row.querySelectorAll("td");
-                years.push(cells[0].textContent);  // 1ere colonne = année
-                surfaces.push(parseFloat(cells[1].textContent));  // 2eme colonne = surfac
-                forets.push(parseFloat(cells[2].textContent));  // 2eme colonne = surfac
-            });
-        
-            // Créer le graphique avec Chart.js
-            const ctx = document.getElementById('surfaceChart').getContext('2d');
-            const surfaceChart = new Chart(ctx, {
-                type: 'line',  // Type de graphique (ici un graphique en ligne)
-                data: {
-                    labels: years,  // Les années extraites
-                    datasets: [
-                        {
-                        label: 'Surface Totale',
-                        data: surfaces,  // Les surfaces extraites
-                        borderColor: 'rgba(0, 116, 78, 1)',  // Couleur de la ligne
-                        backgroundColor: 'rgba(0, 116, 78, 0.2)',  // Couleur de fond de la ligne
-                        borderWidth: 2,
-                        fill: true,  // Remplissage sous la courbe
-                        yAxisID: 'y'
-                        },
-                        {
-                        label: 'Forêts',
-                        data: forets,  // Les surfaces extraites
-                        borderColor: 'rgba(0, 0, 78, 1)',  // Couleur de la ligne
-                        backgroundColor: 'rgba(0, 100, 78, 0.2)',  // Couleur de fond de la ligne
-                        borderWidth: 2,
-                        fill: true,  // Remplissage sous la courbe
-                        yAxisID: 'y1'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Année'
-                            }
-                        },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: {
-                                display: true,
-                                text: 'Surface (ha)'
-                            },
-                            beginAtZero: true // Axe pour "Surface Totale"
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: {
-                                display: true,
-                                text: 'Forêts (ha)'
-                            },
-                            beginAtZero: true,
-                            grid: {
-                                drawOnChartArea: false // Empêche le quadrillage de se superposer
-                            }
-                        }
-                    }
-                }
-            });
-        </script>
-
-
     <h2>Sol</h1>
     <table id="soil">
         <tr>
@@ -318,6 +236,91 @@
                         <td>eticmonts</td>
                     </tr>
                 </table>
+
+
+
+                <h2>Graphique des surfaces par année</h2>
+                <canvas id="surfaceChart" width="300" height="100"></canvas>
+                
+                <script>
+                    // Récupération des données depuis le tableau HTML
+                    const rows = document.querySelectorAll("#surface tbody tr");
+                    const years = [];
+                    const surfaces = [];
+                    const forets = [];
+        
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll("td");
+                        years.push(cells[0].textContent);  // 1ere colonne = année
+                        surfaces.push(parseFloat(cells[1].textContent));  // 2eme colonne = surfac
+                        forets.push(parseFloat(cells[2].textContent));  // 2eme colonne = surfac
+                    });
+                
+                    // Créer le graphique avec Chart.js
+                    const ctx = document.getElementById('surfaceChart').getContext('2d');
+                    const surfaceChart = new Chart(ctx, {
+                        type: 'line',  // Type de graphique (ici un graphique en ligne)
+                        data: {
+                            labels: years,  // Les années extraites
+                            datasets: [
+                                {
+                                label: 'Surface Totale',
+                                data: surfaces,  // Les surfaces extraites
+                                borderColor: 'rgba(0, 116, 78, 1)',  // Couleur de la ligne
+                                backgroundColor: 'rgba(0, 116, 78, 0.2)',  // Couleur de fond de la ligne
+                                borderWidth: 2,
+                                fill: true,  // Remplissage sous la courbe
+                                yAxisID: 'y'
+                                },
+                                {
+                                label: 'Forêts',
+                                data: forets,  // Les surfaces extraites
+                                borderColor: 'rgba(0, 0, 78, 1)',  // Couleur de la ligne
+                                backgroundColor: 'rgba(0, 100, 78, 0.2)',  // Couleur de fond de la ligne
+                                borderWidth: 2,
+                                fill: true,  // Remplissage sous la courbe
+                                yAxisID: 'y1'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Année'
+                                    }
+                                },
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    title: {
+                                        display: true,
+                                        text: 'Surface (ha)'
+                                    },
+                                    beginAtZero: true // Axe pour "Surface Totale"
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    title: {
+                                        display: true,
+                                        text: 'Forêts (ha)'
+                                    },
+                                    beginAtZero: true,
+                                    grid: {
+                                        drawOnChartArea: false // Empêche le quadrillage de se superposer
+                                    }
+                                }
+                            }
+                        }
+                    });
+                </script>
+
+                <h3>Créé par Etic'Monts pour Etic'Monts</h3>
 
 </body>
 

@@ -37,6 +37,7 @@ CREATE_SURFACE_TABLE = (f'''CREATE TABLE IF NOT EXISTS surface (
 CREATE_SOIL_TABLE = (f'''CREATE TABLE IF NOT EXISTS soil (
     id SERIAL PRIMARY KEY,
     linked_id INT REFERENCES {TABLE_NAME}(id) ON DELETE CASCADE,
+    year INTEGER CHECK (year >= 2010 AND year <= 2100),
     knowledge VARCHAR(500),
     humus VARCHAR(500),
     microbio VARCHAR(500),
@@ -48,6 +49,7 @@ CREATE_SOIL_TABLE = (f'''CREATE TABLE IF NOT EXISTS soil (
 CREATE_WATER_TABLE = (f'''CREATE TABLE IF NOT EXISTS water (
     id SERIAL PRIMARY KEY,
     linked_id INT REFERENCES {TABLE_NAME}(id) ON DELETE CASCADE,
+    year INTEGER CHECK (year >= 2010 AND year <= 2100),
     pluvio DECIMAL(10, 4),
     total_conso DECIMAL(10, 4),
     conso_par_kg DECIMAL(10, 4),
@@ -64,6 +66,7 @@ CREATE_WATER_TABLE = (f'''CREATE TABLE IF NOT EXISTS water (
 CREATE_INTRANT_TABLE = (f'''CREATE TABLE IF NOT EXISTS intrants (
     id SERIAL PRIMARY KEY,
     linked_id INT REFERENCES {TABLE_NAME}(id) ON DELETE CASCADE,
+    year INTEGER CHECK (year >= 2010 AND year <= 2100),
     production VARCHAR(50),
     production_cost DECIMAL(10, 2),
     distribution VARCHAR(50),
@@ -72,10 +75,10 @@ CREATE_INTRANT_TABLE = (f'''CREATE TABLE IF NOT EXISTS intrants (
     recycling_cost DECIMAL(10, 2)
 );''')
 
-
 CREATE_LUTTE_TABLE = (f'''CREATE TABLE IF NOT EXISTS lutte (
     id SERIAL PRIMARY KEY,
     linked_id INT REFERENCES {TABLE_NAME}(id) ON DELETE CASCADE,
+    year INTEGER CHECK (year >= 2010 AND year <= 2100),
     biodiversite VARCHAR(50),
     lutte_phyto DECIMAL(10, 2),
     distribution VARCHAR(50),
@@ -86,6 +89,16 @@ CREATE_LUTTE_TABLE = (f'''CREATE TABLE IF NOT EXISTS lutte (
 
 
 INSERT_INTO_SURFACE = (f'''INSERT INTO surface (linked_id, year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;''')
+DELETE_FROM_SURFACE = (f'''DELETE FROM surface WHERE id = (%s);''') #AND year = %s;
+SURFACE_LIST = (f'''SELECT * FROM surface''')
+
+INSERT_INTO_SOIL = (f'''INSERT INTO soil (linked_id, year, knowledge, humus, microbio, rotation, farming_practice, description) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;''')
+DELETE_FROM_SOIL = (f'''DELETE FROM soil WHERE id = (%s);''') #AND year = %s;
+SOIL_LIST = (f'''SELECT * FROM soil''')
+
+INSERT_INTO_WATER = (f'''INSERT INTO water (linked_id, year, pluvio, total_conso, conso_par_kg, retention, arrosage_veg, arrosage_prod, materiel, fuite, pilotage, actions, description) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;''')
+DELETE_FROM_WATER = (f'''DELETE FROM water WHERE id = (%s);''') #AND year = %s;
+WATER_LIST = (f'''SELECT * FROM water''')
 
 app = Flask(__name__)
 
@@ -108,8 +121,8 @@ def initdb():
     curr = conn.cursor()
     curr.execute(CREATE_PLAYERS_TABLE)
     curr.execute(CREATE_SURFACE_TABLE)
-    #curr.execute(CREATE_SOIL_TABLE)
-    #curr.execute(CREATE_WATER_TABLE)
+    curr.execute(CREATE_SOIL_TABLE)
+    curr.execute(CREATE_WATER_TABLE)
     #curr.execute(CREATE_INTRANT_TABLE)
     #curr.execute(CREATE_LUTTE_TABLE)
     conn.commit()
@@ -255,9 +268,12 @@ def dashboard():
             
             conn = db_conn()
             curr = conn.cursor()
-            curr.execute(f'''SELECT year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description FROM surface WHERE linked_id = (%s)''', (id,))
+            curr.execute(f'''SELECT id, year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description FROM surface WHERE linked_id = (%s)''', (id,))
             surfaces = curr.fetchall()
-
+            curr.execute(f'''SELECT id, year, knowledge, humus, microbio, rotation, farming_practice description FROM soil WHERE linked_id = (%s)''', (id,))
+            soils = curr.fetchall()
+            curr.execute(f'''SELECT id, year, pluvio, total_conso, conso_par_kg, retention, arrosage_veg, arrosage_prod, materiel, fuite, pilotage, actions, description FROM water WHERE linked_id = (%s)''', (id,))
+            water = curr.fetchall()
             curr.close()
             conn.close()
 
@@ -274,13 +290,13 @@ def dashboard():
                 walls = "non défini"
                 mown_area = "non défini"
                 not_worked_area = "non défini"
-                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, surfaces=surfaces),  
+                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, surfaces=surfaces, soils=soils),  
             #if  request.form2[]:           
             ###### ICI DANS LE ELSE EN DESSOUS RENVOYER LES LIGNES DE BDD CORREPONDANTES
             else:
                 #linked_id, year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description = result
                 # ICI SELECT CORRECT LINES id_surface, linked_id, surface_type, area, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description = result
-                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, surfaces=surfaces)
+                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, surfaces=surfaces, soils=soils, water=water)
        
        
         else:
@@ -299,9 +315,14 @@ def addsurf():
             created_date = session['created_date']
             last_login_date = session['last_login_date']
             #SEARCH_CREATED_DATE = (f'''SELECT created_date FROM {TABLE_NAME} WHERE name LIKE (%s)''')
-            return redirect(url_for('addsurf'))
+            return redirect(url_for('addsurf', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date))
 
     if (request.method == 'POST') & ('username' in session):
+        username = session['username']
+        id = session['user_id']  # Récupère le nom de l'utilisateur de la session
+        created_date = session['created_date']
+        last_login_date = session['last_login_date']
+    
         id = session['user_id']
         year = int(request.form['year'])
         surface = float(request.form['surface'])
@@ -320,30 +341,166 @@ def addsurf():
         curr = conn.cursor()
         curr.execute(INSERT_INTO_SURFACE, (id, year, surface, foret, haie, roncier, mare, coursdeau, tasdebois, murets, surfnontondue, surfnontravaillee, commentaire))
         conn.commit()
-        curr.execute(f'''SELECT year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description FROM surface WHERE linked_id = (%s)''', (id,))
+        curr.execute(f'''SELECT id, year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description FROM surface WHERE linked_id = (%s)''', (id,))
         surfaces = curr.fetchall()
         curr.close()
         conn.close()
 
         flash(f"Surface pour année {year} ajouté","success")
 
-        return render_template('addsurf.html', surfaces=surfaces)
-        #result = curr.fetchone()
-
-
-        #if  request.form2[]:           
+        return render_template('addsurf.html', surfaces=surfaces, username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
         
     else:
         flash(f"Mauvaise methode ou loggez vous","error")
         #year,linked_id, year, surface_type, area, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description = result
         return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, year=year, surface=surface,foret=foret, haies=haie, roncier=roncier, mare=mare, coursdeau=coursdeau, tasdebois=tasdebois, murets=murets, surfnontondue=surfnontondue, surfnontravaillee=surfnontravaillee )
-       
-       
-        #else:
-        #    return redirect(url_for('login'))
+
+@app.route('/addsoil', methods=['GET','POST' ])
+def addsoil():
+    if request.method == 'GET':
         
+        if 'username' in session:
+            username = session['username']
+            id = session['user_id']  # Récupère le nom de l'utilisateur de la session
+            created_date = session['created_date']
+            last_login_date = session['last_login_date']
+            #SEARCH_CREATED_DATE = (f'''SELECT created_date FROM {TABLE_NAME} WHERE name LIKE (%s)''')
+            return redirect(url_for('addsurf', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date))
+
+    if (request.method == 'POST') & ('username' in session):
+        username = session['username']
+        id = session['user_id']  # Récupère le nom de l'utilisateur de la session
+        created_date = session['created_date']
+        last_login_date = session['last_login_date']
     
-        #return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
+        id = session['user_id']
+        year = int(request.form['year'])
+        knowledge = request.form['knowledge']
+        humus = request.form['humus']
+        microbio = request.form['microbio']
+        rotation = request.form['rotation']
+        farming_practice = request.form['farming_practice']
+        commentaire = request.form['commentaire']
+
+        conn = db_conn()
+        curr = conn.cursor()
+        curr.execute(INSERT_INTO_SOIL, (id, year, knowledge, humus, microbio, rotation, farming_practice, commentaire))
+        conn.commit()
+        curr.execute(f'''SELECT id, year, knowledge, humus, microbio, farming_practice, description FROM soil WHERE linked_id = (%s)''', (id,))
+        soils = curr.fetchall()
+        curr.close()
+        conn.close()
+
+        flash(f"Données sols pour année {year} ajouté","success")
+
+        return render_template('addsurf.html', soils=soils, username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
+        
+    else:
+        flash(f"Mauvaise methode ou loggez vous","error")
+        #year,linked_id, year, surface_type, area, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description = result
+        return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, year=year)
+
+
+@app.route('/addwater', methods=['GET','POST' ])
+def addwater():
+    if request.method == 'GET':
+        
+        if 'username' in session:
+            username = session['username']
+            id = session['user_id']  # Récupère le nom de l'utilisateur de la session
+            created_date = session['created_date']
+            last_login_date = session['last_login_date']
+            #SEARCH_CREATED_DATE = (f'''SELECT created_date FROM {TABLE_NAME} WHERE name LIKE (%s)''')
+            return redirect(url_for('addsurf', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date))
+
+    if (request.method == 'POST') & ('username' in session):
+        username = session['username']
+        id = session['user_id']  # Récupère le nom de l'utilisateur de la session
+        created_date = session['created_date']
+        last_login_date = session['last_login_date']
+    
+        id = session['user_id']
+        year = int(request.form['year'])
+        pluvio = float(request.form['pluvio'])
+        total_conso = float(request.form['total_conso'])
+        conso_par_kg = float(request.form['conso_par_kg'])
+        retention = request.form['retention']
+        arr_veg = request.form['arr_veg']
+        arr_prod = request.form['arr_prod']
+        materiel = request.form['materiel']
+        fuite = request.form['fuite']
+        pilotage = request.form['pilotage']
+        actions = request.form['actions']
+        commentaire = request.form['commentaire']
+
+        conn = db_conn()
+        curr = conn.cursor()
+        curr.execute(INSERT_INTO_WATER, (id, year, pluvio, total_conso, conso_par_kg, retention, arr_veg, arr_prod, materiel, fuite, pilotage, actions, commentaire))
+        conn.commit()
+        curr.execute(f'''SELECT id, year, pluvio, total_conso, conso_par_kg, retention, arrosage_veg, arrosage_prod, materiel, fuite, pilotage, actions, description FROM water WHERE linked_id = (%s)''', (id,))
+        water = curr.fetchall()
+        curr.close()
+        conn.close()
+
+        flash(f"Données eau pour année {year} ajouté","success")
+
+        return render_template('addsurf.html', water=water, username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
+        
+    else:
+        flash(f"Mauvaise methode ou loggez vous","error")
+        #year,linked_id, year, surface_type, area, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description = result
+        return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, year=year, water=water)
+
+
+@app.route('/deletesurf/<int:idtodel>')
+def deletesurf(idtodel):
+    conn = db_conn()
+    cur = conn.cursor()
+    
+    # Supprimer la ligne avec l'id correspondant
+    cur.execute(DELETE_FROM_SURFACE, (idtodel,))
+    
+    # Fermeture des connexions
+    cur.close()
+    conn.commit()
+    conn.close()
+    
+    flash('Ligne supprimée avec succès.', 'success')
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/deletesoil/<int:idtodel>')
+def deletesoil(idtodel):
+    conn = db_conn()
+    cur = conn.cursor()
+    
+    # Supprimer la ligne avec l'id correspondant
+    cur.execute(DELETE_FROM_SOIL, (idtodel,))
+    
+    # Fermeture des connexions
+    cur.close()
+    conn.commit()
+    conn.close()
+    
+    flash('Ligne supprimée avec succès.', 'success')
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/deletewater/<int:idtodel>')
+def deletewater(idtodel):
+    conn = db_conn()
+    cur = conn.cursor()
+    
+    # Supprimer la ligne avec l'id correspondant
+    cur.execute(DELETE_FROM_WATER, (idtodel,))
+    
+    # Fermeture des connexions
+    cur.close()
+    conn.commit()
+    conn.close()
+    
+    flash('Ligne supprimée avec succès.', 'success')
+    return redirect(url_for('dashboard'))
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -366,6 +523,18 @@ def get_player_list():
         return playerlist
     else:
         return "no player in database"
+    
+@ app.get("/surfacelist")
+def get_surface_list():
+    curr = db_conn().cursor()
+    curr.execute(SURFACE_LIST)
+    surfacelist = curr.fetchall()
+    db_conn().close()
+
+    if surfacelist:
+        return surfacelist
+    else:
+        return "no surface in database"
 
 @ app.get("/totalplayer")
 def get_total_player():
