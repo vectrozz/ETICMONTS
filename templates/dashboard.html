@@ -68,30 +68,16 @@
                     <td>{{ row[4] }}</td> <!-- hedge -->
                     <td>{{ row[5] }}</td> <!-- bramble -->
                     <td>{{ row[6] }}</td> <!-- pond -->
-                    <td>{{ row[7] }}</td> <!-- pond -->
-                    <td>{{ row[8] }}</td> <!-- pond -->
-                    <td>{{ row[9] }}</td> <!-- pond -->
-                    <td>{{ row[10] }}</td> <!-- pond -->
-                    <td>{{ row[11] }}</td> <!-- pond -->
-                    <td>{{ row[12] }}</td> <!-- pond -->
+                    <td>{{ row[7] }}</td> 
+                    <td>{{ row[8] }}</td> 
+                    <td>{{ row[9] }}</td> 
+                    <td>{{ row[10] }}</td> 
+                    <td>{{ row[11] }}</td> 
+                    <td>{{ row[12] }}</td> 
                     <td><a href="{{ url_for('deletesurf', idtodel=row[0]) }}" onclick="return confirm('Voulez-vous vraiment supprimer cette ligne ?');">SUPPR</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
-            <!--<tr>
-                <td>{{annee}}</td>
-                <td>{{surface}}</td>
-                <td>{{forêt}}</td>
-                <td>{{haie}}</td>
-                <td>{{roncier}}</td>
-                <td>{{mare}}</td>
-                <td>{{courdeau}}</td>
-                <td>{{tasdebois}}</td>
-                <td>{{muret}}</td>
-                <td>{{surfnontondue}}</td>
-                <td>{{Surfnontravaillee}}</td>
-                <td>commentaire</td>
-            </tr>-->
             <tr>
                 <form action="{{ url_for('addsurf') }}" method="POST">
                     <td><h2>-</h2></td>
@@ -144,7 +130,8 @@
                         borderColor: 'rgba(0, 116, 78, 1)',  // Couleur de la ligne
                         backgroundColor: 'rgba(0, 116, 78, 0.2)',  // Couleur de fond de la ligne
                         borderWidth: 2,
-                        fill: true  // Remplissage sous la courbe
+                        fill: true,  // Remplissage sous la courbe
+                        yAxisID: 'y'
                         },
                         {
                         label: 'Forêts',
@@ -152,7 +139,8 @@
                         borderColor: 'rgba(0, 0, 78, 1)',  // Couleur de la ligne
                         backgroundColor: 'rgba(0, 100, 78, 0.2)',  // Couleur de fond de la ligne
                         borderWidth: 2,
-                        fill: true  // Remplissage sous la courbe
+                        fill: true,  // Remplissage sous la courbe
+                        yAxisID: 'y1'
                         }
                     ]
                 },
@@ -166,11 +154,27 @@
                             }
                         },
                         y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
                             title: {
                                 display: true,
                                 text: 'Surface (ha)'
                             },
-                            beginAtZero: true  // Démarrer l'axe des ordonnées à zéro
+                            beginAtZero: true // Axe pour "Surface Totale"
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Forêts (ha)'
+                            },
+                            beginAtZero: true,
+                            grid: {
+                                drawOnChartArea: false // Empêche le quadrillage de se superposer
+                            }
                         }
                     }
                 }
@@ -179,69 +183,141 @@
 
 
     <h2>Sol</h1>
-    <table id="sol">
+    <table id="soil">
         <tr>
-            <td>sol</td>
-            <td>Name</td>
-            <td>Member since</td>
-            <td>Last login</td>
+            <td>id</td>
+            <td>année</td>
+            <td>Connaissance sol</td>
+            <td>Gestion taux humus</td>
+            <td>Vie microbienne</td>
+            <td>Rotation repos</td>
+            <td>Pratique agronomiques</td>
+            <td>Commentaire</td>
         </tr>
+        <tbody>
+            {% for row in soils %}
+            <tr>
+                <td>{{ row[0] }}</td> <!-- id -->
+                <td>{{ row[1] }}</td> <!-- year -->
+                <td>{{ row[2] }}</td> <!-- surface -->
+                <td>{{ row[3] }}</td> <!-- forest -->
+                <td>{{ row[4] }}</td> <!-- hedge -->
+                <td>{{ row[5] }}</td> <!-- bramble -->
+                <td>{{ row[6] }}</td> <!-- pond -->
+                <td>{{ row[7] }}</td> 
+                <td><a href="{{ url_for('deletesoil', idtodel=row[0]) }}" onclick="return confirm('Voulez-vous vraiment supprimer cette ligne ?');">SUPPR</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
         <tr>
-            <td>{{user_id}}</td>
-            <td>{{username}}</td>
-            <td>{{created_date}}</td>
-            <td>{{last_login_date}}</td>
+        <tr>
+            <form action="{{ url_for('addsoil') }}" method="POST">
+                <td><h2>-</h2></td>
+                <td><input type="number" id="year" name="year" min="2010" max="2100" step="1" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" ></td>
+                <td><input type="text" id="knowledge" name="knowledge" required></td>
+                <td><input type="text" id="humus" name="humus" required></td>
+                <td><input type="text" id="microbio" name="microbio" required></td>
+                <td><input type="text" id="rotation" name="rotation" required></td>
+                <td><input type="text" id="farming_practice" name="farming_practice" required></td>
+                <td><input type="text" id="commentaire" name="commentaire" required></td>
+                <td><button type="submit">ajouter données sol</button></td>
+            </form>
+
         </tr>
+
+
+
     </table>
 
     <h2>Eau</h1>
-        <table id="sol">
+        <table id="water">
             <tr>
-                <td>sol</td>
-                <td>Name</td>
-                <td>Member since</td>
-                <td>Last login</td>
+                <td>id</td>
+                <td>année</td>
+                <td>pluvio</td>
+                <td>conso totale</td>
+                <td>conso par kg produit</td>
+                <td>retention des sols</td>
+                <td>arrosage veg</td>
+                <td>arrosage prod</td>
+                <td>materiel</td>
+                <td>fuite</td>
+                <td>outils de pilotage</td>
+                <td>actions</td>
+                <td>Commentaire</td>
             </tr>
+            <tbody>
+                {% for row in water %}
+                <tr>
+                    <td>{{ row[0] }}</td> <!-- id -->
+                    <td>{{ row[1] }}</td> <!-- year -->
+                    <td>{{ row[2] }}</td> <!-- surface -->
+                    <td>{{ row[3] }}</td> <!-- forest -->
+                    <td>{{ row[4] }}</td> <!-- hedge -->
+                    <td>{{ row[5] }}</td> <!-- bramble -->
+                    <td>{{ row[6] }}</td> <!-- pond -->
+                    <td>{{ row[7] }}</td> 
+                    <td>{{ row[8] }}</td> 
+                    <td>{{ row[9] }}</td> 
+                    <td>{{ row[10] }}</td> 
+                    <td>{{ row[11] }}</td> 
+                    <td>{{ row[12] }}</td> 
+                    <td><a href="{{ url_for('deletewater', idtodel=row[0]) }}" onclick="return confirm('Voulez-vous vraiment supprimer cette ligne ?');">SUPPR</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
             <tr>
-                <td>{{user_id}}</td>
-                <td>{{username}}</td>
-                <td>{{created_date}}</td>
-                <td>{{last_login_date}}</td>
+                <form action="{{ url_for('addwater') }}" method="POST">
+                    <td><h2>-</h2></td>
+                    <td><input type="number" id="year" name="year" min="2010" max="2100" step="1" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" ></td>
+                    <td><input type="number" id="pluvio" name="pluvio" step="0.0001" min="0" required></td>
+                    <td><input type="number" id="total_conso" name="total_conso" step="0.0001" min="0" required></td>
+                    <td><input type="number" id="conso_par_kg" name="conso_par_kg" step="0.0001" min="0" required></td>
+                    <td><input type="text" id="retention" name="retention" required></td>
+                    <td><input type="text" id="arr_veg" name="arr_veg" required></td>
+                    <td><input type="text" id="arr_prod" name="arr_prod" required></td>
+                    <td><input type="text" id="materiel" name="materiel" required></td>
+                    <td><input type="text" id="fuite" name="fuite" required></td>
+                    <td><input type="text" id="pilotage" name="pilotage" required></td>
+                    <td><input type="text" id="actions" name="actions" required></td>
+                    <td><input type="text" id="commentaire" name="commentaire" ></td>
+                    <td><button type="submit">ajouter données eau</button></td>
+                </form>
+
             </tr>
         </table>
 
         <h2>Intrants</h1>
-            <table id="sol">
+            <table id="intrants">
                 <tr>
-                    <td>sol</td>
-                    <td>Name</td>
-                    <td>Member since</td>
-                    <td>Last login</td>
+                    <td>-_-</td>
+                    <td>-_-</td>
+                    <td>-_-</td>
+                    <td>-_-</td>
                 </tr>
                 <tr>
-                    <td>{{user_id}}</td>
-                    <td>{{username}}</td>
-                    <td>{{created_date}}</td>
-                    <td>{{last_login_date}}</td>
+                    <td>eticmonts</td>
+                    <td>-_-</td>
+                    <td>-_-</td>
+                    <td>eticmonts</td>
                 </tr>
             </table>
 
             <h2>Luttes</h1>
-                <table id="sol">
+                <table id="luttes">
                     <tr>
-                        <td><b>sol</b></td>
-                        <td>Name</td>
-                        <td>Member since</td>
-                        <td>Last login</td>
+                        <td>-_-</td>
+                        <td>-_-</td>
+                        <td>-_-</td>
+                        <td>-_-</td>
                     </tr>
                     <tr>
-                        <td>{{user_id}}</td>
-                        <td>{{username}}</td>
-                        <td>{{created_date}}</td>
-                        <td>{{last_login_date}}</td>
+                        <td>eticmonts</td>
+                        <td>-_-</td>
+                        <td>-_-</td>
+                        <td>eticmonts</td>
                     </tr>
                 </table>
-                <a href="{{url_for('logout')}}">Logout</a>
 
 </body>
 
