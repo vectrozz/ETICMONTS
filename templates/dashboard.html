@@ -43,6 +43,7 @@
     <h2>Surface</h1>
         <table id="surface">
             <tr>
+                <td>ID</td>
                 <td>année</td>
                 <td>surface totale</td>
                 <td>forêt</td>
@@ -55,6 +56,7 @@
                 <td>Surface non tondue</td>
                 <td>Surface non travaillée</td>
                 <td>commentaire</td>
+                <td>SUPPR</td>
             </tr>
             <tbody>
                 {% for row in surfaces %}
@@ -71,6 +73,8 @@
                     <td>{{ row[9] }}</td> <!-- pond -->
                     <td>{{ row[10] }}</td> <!-- pond -->
                     <td>{{ row[11] }}</td> <!-- pond -->
+                    <td>{{ row[12] }}</td> <!-- pond -->
+                    <td><a href="{{ url_for('deletesurf', idtodel=row[0]) }}" onclick="return confirm('Voulez-vous vraiment supprimer cette ligne ?');">SUPPR</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -90,6 +94,7 @@
             </tr>-->
             <tr>
                 <form action="{{ url_for('addsurf') }}" method="POST">
+                    <td><h2>-</h2></td>
                     <td><input type="number" id="year" name="year" min="2010" max="2100" step="1" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" ></td>
                     <td><input type="number" id="surface" name="surface" step="0.0001" min="0" required></td>
                     <td><input type="number" id="foret" name="foret" step="0.0001" min="0" required></td>

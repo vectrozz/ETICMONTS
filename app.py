@@ -87,6 +87,9 @@ CREATE_LUTTE_TABLE = (f'''CREATE TABLE IF NOT EXISTS lutte (
 
 INSERT_INTO_SURFACE = (f'''INSERT INTO surface (linked_id, year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;''')
 
+DELETE_FROM_SURFACE = (f'''DELETE FROM surface WHERE id = (%s);''') #AND year = %s;
+
+SURFACE_LIST = (f'''SELECT * FROM surface''')
 app = Flask(__name__)
 
 def db_conn():
@@ -255,7 +258,7 @@ def dashboard():
             
             conn = db_conn()
             curr = conn.cursor()
-            curr.execute(f'''SELECT year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description FROM surface WHERE linked_id = (%s)''', (id,))
+            curr.execute(f'''SELECT id, year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description FROM surface WHERE linked_id = (%s)''', (id,))
             surfaces = curr.fetchall()
 
             curr.close()
@@ -299,9 +302,14 @@ def addsurf():
             created_date = session['created_date']
             last_login_date = session['last_login_date']
             #SEARCH_CREATED_DATE = (f'''SELECT created_date FROM {TABLE_NAME} WHERE name LIKE (%s)''')
-            return redirect(url_for('addsurf'))
+            return redirect(url_for('addsurf', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date))
 
     if (request.method == 'POST') & ('username' in session):
+        username = session['username']
+        id = session['user_id']  # Récupère le nom de l'utilisateur de la session
+        created_date = session['created_date']
+        last_login_date = session['last_login_date']
+    
         id = session['user_id']
         year = int(request.form['year'])
         surface = float(request.form['surface'])
@@ -320,14 +328,14 @@ def addsurf():
         curr = conn.cursor()
         curr.execute(INSERT_INTO_SURFACE, (id, year, surface, foret, haie, roncier, mare, coursdeau, tasdebois, murets, surfnontondue, surfnontravaillee, commentaire))
         conn.commit()
-        curr.execute(f'''SELECT year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description FROM surface WHERE linked_id = (%s)''', (id,))
+        curr.execute(f'''SELECT id, year, surface, forest, hedge, bramble, pond, watercourse, wood_pile, walls, mown_area, not_worked_area, description FROM surface WHERE linked_id = (%s)''', (id,))
         surfaces = curr.fetchall()
         curr.close()
         conn.close()
 
         flash(f"Surface pour année {year} ajouté","success")
 
-        return render_template('addsurf.html', surfaces=surfaces)
+        return render_template('addsurf.html', surfaces=surfaces, username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
         #result = curr.fetchone()
 
 
@@ -344,7 +352,21 @@ def addsurf():
         
     
         #return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
-
+@app.route('/deletesurf/<int:idtodel>')
+def deletesurf(idtodel):
+    conn = db_conn()
+    cur = conn.cursor()
+    
+    # Supprimer la ligne avec l'id correspondant
+    cur.execute(DELETE_FROM_SURFACE, (idtodel,))
+    
+    # Fermeture des connexions
+    cur.close()
+    conn.commit()
+    conn.close()
+    
+    flash('Ligne supprimée avec succès.', 'success')
+    return redirect(url_for('dashboard'))
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -366,6 +388,18 @@ def get_player_list():
         return playerlist
     else:
         return "no player in database"
+    
+@ app.get("/surfacelist")
+def get_surface_list():
+    curr = db_conn().cursor()
+    curr.execute(SURFACE_LIST)
+    surfacelist = curr.fetchall()
+    db_conn().close()
+
+    if surfacelist:
+        return surfacelist
+    else:
+        return "no surface in database"
 
 @ app.get("/totalplayer")
 def get_total_player():
