@@ -106,7 +106,7 @@ def db_conn():
     return psycopg2.connect(database="eticmont", host="postgres-db", user="eticmont", password="eticmont", port="5432")
     #return psycopg2.connect(database="eticmont", host="postgres-db", user="eticmont", password="eticmont", port="5432")==>config docker, modif aussi host de l'app en bas
     
-t = Bcrypt(app)
+bcrypt = Bcrypt(app)
 app.secret_key = 'sohgHZ64gzgooazgskj'  # Use a strong secret key in production
 
 @app.route('/')
