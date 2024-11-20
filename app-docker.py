@@ -106,8 +106,7 @@ def db_conn():
     return psycopg2.connect(database="eticmont", host="postgres-db", user="eticmont", password="eticmont", port="5432")
     #return psycopg2.connect(database="eticmont", host="postgres-db", user="eticmont", password="eticmont", port="5432")==>config docker, modif aussi host de l'app en bas
     
-    
-bcrypt = Bcrypt(app)
+t = Bcrypt(app)
 app.secret_key = 'sohgHZ64gzgooazgskj'  # Use a strong secret key in production
 
 @app.route('/')
@@ -290,7 +289,7 @@ def dashboard():
                 walls = "non défini"
                 mown_area = "non défini"
                 not_worked_area = "non défini"
-                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, surfaces=surfaces, soils=soils),  
+                return render_template('dashboard.html', username=username, user_id=id, created_date=created_date, last_login_date=last_login_date, surfaces=surfaces, soils=soils, water=water),  
             #if  request.form2[]:           
             ###### ICI DANS LE ELSE EN DESSOUS RENVOYER LES LIGNES DE BDD CORREPONDANTES
             else:
@@ -349,6 +348,7 @@ def addsurf():
         flash(f"Surface pour année {year} ajouté","success")
 
         return render_template('addsurf.html', surfaces=surfaces, username=username, user_id=id, created_date=created_date, last_login_date=last_login_date)
+        #return render_template('dashboard.html')
         
     else:
         flash(f"Mauvaise methode ou loggez vous","error")

@@ -251,9 +251,9 @@
         
                     rows.forEach(row => {
                         const cells = row.querySelectorAll("td");
-                        years.push(cells[0].textContent);  // 1ere colonne = année
-                        surfaces.push(parseFloat(cells[1].textContent));  // 2eme colonne = surfac
-                        forets.push(parseFloat(cells[2].textContent));  // 2eme colonne = surfac
+                        years.push(cells[1].textContent);  // 1ere colonne = année
+                        surfaces.push(parseFloat(cells[2].textContent));  // 2eme colonne = surfac
+                        forets.push(parseFloat(cells[3].textContent));  // 2eme colonne = surfac
                     });
                 
                     // Créer le graphique avec Chart.js
@@ -320,7 +320,7 @@
                     });
                 </script>
 
-                <h3>Créé par Etic'Monts pour Etic'Monts</h3>
+                <h3>Créé par bobponey pour Etic'Monts - 2024 - v0.6</h3>
 
 </body>
 

@@ -20,7 +20,7 @@
 </head>
 
 <body>
-    <h1>Ajout de surface pour {{ username }}.</h1>
+    <!-- <h2>Ajout de surface pour {{ username }}.</h2> -->
     <a href="{{url_for('logout')}}" class="button">Logout</a>
     <a href="{{url_for('dashboard')}}" class="button"><b>dashboard</b></a>
 
@@ -40,56 +40,6 @@
         </tr>
     </table>
 
-    <h2>Surface</h1>
-        <table id="surface">
-            <tr>
-                <td>année</td>
-                <td>surface totale</td>
-                <td>forêt</td>
-                <td>Haies</td>
-                <td>Roncier</td>
-                <td>Mares</td>
-                <td>Cours d'eau</td>
-                <td>Tas de bois</td>
-                <td>Murets</td>
-                <td>Surface non tondue</td>
-                <td>Surface non travaillée</td>
-                <td>commentaire</td>
-            </tr>
-            <tbody>
-                {% for row in surfaces %}
-                <tr>
-                    <td>{{ row[1] }}</td> <!-- year -->
-                    <td>{{ row[2] }}</td> <!-- surface -->
-                    <td>{{ row[3] }}</td> <!-- forest -->
-                    <td>{{ row[4] }}</td> <!-- hedge -->
-                    <td>{{ row[5] }}</td> <!-- bramble -->
-                    <td>{{ row[6] }}</td> <!-- pond -->
-                    <td>{{ row[7] }}</td> <!-- pond -->
-                    <td>{{ row[8] }}</td> <!-- pond -->
-                    <td>{{ row[9] }}</td> <!-- pond -->
-                    <td>{{ row[10] }}</td> <!-- pond -->
-                    <td>{{ row[11] }}</td> <!-- pond -->
-                    <td>{{ row[12] }}</td> <!-- pond -->
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tr>
-                <form action="{{ url_for('addsurf') }}" method="POST">
-                    <td><input type="number" id="year" name="year" min="2010" max="2100" step="1" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" ></td>
-                    <td><input type="number" id="surface" name="surface" step="0.0001" min="0" required></td>
-                    <td><input type="number" id="foret" name="foret" step="0.0001" min="0" required></td>
-                    <td><input type="number" id="haie" name="haie" step="0.0001" min="0" required></td>
-                    <td><input type="number" id="roncier" name="roncier" step="0.0001" min="0" required></td>
-                    <td><input type="number" id="mare" name="mare" step="0.0001" min="0" required></td>
-                    <td><input type="number" id="coursdeau" name="coursdeau" step="0.0001" min="0" required></td>
-                    <td><input type="number" id="tasdebois" name="tasdebois" step="0.0001" min="0" required></td>
-                    <td><input type="number" id="murets" name="murets" step="0.0001" min="0" required></td>
-                    <td><input type="number" id="surfnontondue" name="surfnontondue" step="0.0001" min="0" required></td>
-                    <td><input type="number" id="surfnontravaillee" name="surfnontravaillee" step="0.0001" min="0" required ></td>
-                    <td><input type="text" id="commentaire" name="commentaire" ></td>
-                    <td><button type="submit">ajouter surface</button></td>
-                </form>
 
             </tr>
         </table>
